@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from anthropic import Anthropic
+from claude_code_sdk import query, ClaudeCodeOptions
 
 class ClaudeMonitor:
     def __init__(self):
@@ -16,7 +17,7 @@ class ClaudeMonitor:
         self.config = self.load_config()
         
         # Initialize Claude client
-        claude_api_key = self.config.get('claude_api_key') or os.getenv('ANTHROPIC_API_KEY')
+        claude_api_key = self.config.get('sandwich_claude_api_key') or os.getenv('SANDWICH_ANTHROPIC_API_KEY')
         if not claude_api_key:
             raise ValueError("Claude API key must be set in monitor_config.json or ANTHROPIC_API_KEY environment variable")
         self.client = Anthropic(api_key=claude_api_key)
@@ -24,6 +25,7 @@ class ClaudeMonitor:
         self.watch_directory = self.get_claude_project_directory()
         self.monitor_interval = self.config.get('monitor_interval', 15)
         self.running = False
+        self.paused = False
         self.last_file_mtime = None
         self.last_processed_file = None
     
@@ -339,11 +341,133 @@ class ClaudeMonitor:
             print(f"Error summarizing response: {e}")
             return None
 
-    def send_to_claude_code_terminal(self, message: str):
-        """Send a message back to the Claude Code terminal by printing it."""
-        print(f"\n=== CLAUDE MONITOR RESPONSE ===")
-        print(message)
-        print(f"=== END RESPONSE ===\n")
+    def inject_text_to_active_terminal(self, text: str) -> bool:
+        """Inject text into the currently active terminal application."""
+        import platform
+        
+        system = platform.system()
+        
+        if system == "Darwin":  # macOS
+            return self._inject_text_macos(text)
+        elif system == "Linux":
+            return self._inject_text_linux(text)
+        elif system == "Windows":
+            return self._inject_text_windows(text)
+        else:
+            print(f"❌ Unsupported platform: {system}")
+            return False
+    
+    def _inject_text_macos(self, text: str) -> bool:
+        """Inject text on macOS using AppleScript."""
+        try:
+            # Escape special characters for AppleScript
+            escaped_text = text.replace('"', '\\"').replace('\\', '\\\\')
+            
+            # AppleScript to type text in the frontmost application
+            applescript = f'''
+            tell application "System Events"
+                keystroke "{escaped_text}"
+            end tell
+            '''
+            
+            result = subprocess.run(
+                ['osascript', '-e', applescript],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            
+            if result.returncode == 0:
+                print(f"✅ Successfully injected text to active terminal (macOS)")
+                return True
+            else:
+                print(f"❌ AppleScript error: {result.stderr}")
+                return False
+                
+        except subprocess.TimeoutExpired:
+            print(f"❌ Timeout injecting text to terminal")
+            return False
+        except Exception as e:
+            print(f"❌ Error injecting text (macOS): {e}")
+            return False
+    
+    def _inject_text_linux(self, text: str) -> bool:
+        """Inject text on Linux using xdotool."""
+        try:
+            # Check if xdotool is available
+            subprocess.run(['which', 'xdotool'], check=True, capture_output=True)
+            
+            # Use xdotool to type text
+            result = subprocess.run(
+                ['xdotool', 'type', text],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            
+            if result.returncode == 0:
+                print(f"✅ Successfully injected text to active terminal (Linux)")
+                return True
+            else:
+                print(f"❌ xdotool error: {result.stderr}")
+                return False
+                
+        except subprocess.CalledProcessError:
+            print(f"❌ xdotool not found. Install with: sudo apt-get install xdotool")
+            return False
+        except Exception as e:
+            print(f"❌ Error injecting text (Linux): {e}")
+            return False
+    
+    def _inject_text_windows(self, text: str) -> bool:
+        """Inject text on Windows using PowerShell."""
+        try:
+            # Use PowerShell to send keystrokes
+            powershell_script = f'''
+            Add-Type -AssemblyName System.Windows.Forms
+            [System.Windows.Forms.SendKeys]::SendWait("{text}")
+            '''
+            
+            result = subprocess.run(
+                ['powershell', '-Command', powershell_script],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            
+            if result.returncode == 0:
+                print(f"✅ Successfully injected text to active terminal (Windows)")
+                return True
+            else:
+                print(f"❌ PowerShell error: {result.stderr}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Error injecting text (Windows): {e}")
+            return False
+
+    async def send_to_claude_code_terminal(self, message: str):
+        """Send a message back to the Claude Code terminal by injecting text."""
+        print(f"\n=== INJECTING TO ACTIVE TERMINAL ===")
+        print(f"Message: {message}")
+        print(f"=== END MESSAGE ===\n")
+        
+        # Format the message for injection
+        formatted_message = f"\n\n🤖 Monitor Alert: {message}\n"
+        
+        # Try to inject text into active terminal
+        success = self.inject_text_to_active_terminal(formatted_message)
+        
+        if not success:
+            print(f"💡 Falling back to console output:")
+            print(f"\n=== CLAUDE MONITOR RESPONSE ===")
+            print(message)
+            print(f"=== END RESPONSE ===\n")
+        
+        # Resume monitoring after sending terminal instruction
+        if self.paused:
+            print(f"🟢 Resuming monitoring after terminal instruction...")
+            self.paused = False
 
     async def process_latest_file(self):
         """Process the latest JSONL file and handle any errors/questions."""
@@ -407,7 +531,7 @@ class ClaudeMonitor:
                     print(f"📝 CLAUDE SUMMARY:")
                     print(summary)
                     # Send summary back to Claude Code terminal
-                    self.send_to_claude_code_terminal(summary)
+                    await self.send_to_claude_code_terminal(summary)
                 
                 voice_call_made = True
             elif content_block.type == "text":
@@ -425,6 +549,11 @@ class ClaudeMonitor:
         
         while self.running:
             try:
+                if self.paused:
+                    print(f"⏸️  Monitoring paused - waiting for voice call completion...")
+                    await asyncio.sleep(1)  # Short sleep while paused
+                    continue
+                    
                 print(f"🔍 [{asyncio.get_event_loop().time():.1f}] Checking for latest JSONL file...")
                 await self.process_latest_file()
                 print(f"⏳ Waiting {self.monitor_interval} seconds until next check...\n")

@@ -10,3 +10,4 @@ twilio>=8.0.0
 pyautogui>=0.9.54
 html2image>=2.0.0
 selenium>=4.15.0
+claude-code-sdk
