@@ -9,6 +9,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+config.json
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 .Python
 build/
 develop-eggs/
@@ -25,33 +30,3 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# API Keys and Secrets
-.env
-*.key
-*.pem
-monitor_config.json
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Logs
-*.log
-logs/
-
-# Clarification files (these contain sensitive conversation data)
-clarification_*.txt
-clarification_*.json 

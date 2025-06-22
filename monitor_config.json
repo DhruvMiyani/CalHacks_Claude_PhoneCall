@@ -1,7 +1,7 @@
 {
-  "sandwich_claude_api_key": "",
-  "vapi_api_key": "",
-  "vapi_phone_number_id": "",
+  "sandwich_claude_api_key": "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",
+  "vapi_api_key": "26b90483-ca41-4230-b6ba-9c72003e6baf",
+  "vapi_phone_number_id": "d5a026d4-b76e-41a6-b04d-92c1357072b2",
   "vapi_target_phone": "+16508856407",
   "twilio_account_sid": "",
   "twilio_auth_token": "",

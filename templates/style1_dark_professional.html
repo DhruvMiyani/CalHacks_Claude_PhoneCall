@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimeSync - Minimalist Clean</title>
+    <title>TimeSync - Dark Professional</title>
     <style>
         * {
             margin: 0;
@@ -12,165 +12,154 @@
         }
         
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background: #fafafa;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0e27;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
-            color: #333;
+            padding: 20px;
+            color: #ffffff;
         }
         
         .container {
-            background: #ffffff;
-            border-radius: 2px;
-            padding: 60px 40px;
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 40px;
             width: 100%;
-            max-width: 480px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e0e0e0;
+            max-width: 500px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+            border: 1px solid #2d3748;
         }
         
         h1 {
-            font-size: 2rem;
-            font-weight: 300;
-            color: #333;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #60a5fa;
             text-align: center;
-            margin-bottom: 50px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            margin-bottom: 40px;
+            letter-spacing: -0.5px;
         }
         
         .form-group {
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
         
         label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 400;
-            color: #666;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-weight: 500;
+            color: #e2e8f0;
+            font-size: 0.9rem;
         }
         
         input {
             width: 100%;
-            padding: 15px 0;
-            border: none;
-            border-bottom: 1px solid #ddd;
+            padding: 16px 20px;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
             font-size: 16px;
             transition: all 0.3s ease;
-            background: transparent;
-            color: #333;
+            background: #2d3748;
+            color: #ffffff;
         }
         
         input:focus {
             outline: none;
-            border-bottom-color: #333;
-        }
-        
-        input::placeholder {
-            color: #999;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
         }
         
         button {
             width: 100%;
-            background: #333;
-            color: white;
+            background: #60a5fa;
+            color: #0a0e27;
             border: none;
             padding: 18px;
-            border-radius: 0;
-            font-size: 14px;
-            font-weight: 400;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 20px;
         }
         
         button:hover {
-            background: #000;
+            background: #3b82f6;
+            transform: translateY(-1px);
         }
         
         button:disabled {
             opacity: 0.6;
+            transform: none;
             cursor: not-allowed;
         }
         
         .result {
-            margin-top: 40px;
-            padding: 30px 0;
-            border-top: 1px solid #eee;
+            margin-top: 32px;
+            padding: 24px;
+            background: #2d3748;
+            border-radius: 12px;
+            border-left: 4px solid #60a5fa;
             display: none;
         }
         
         .time-info {
             display: grid;
-            gap: 30px;
+            gap: 16px;
         }
         
         .time-box {
-            text-align: center;
-            padding: 20px 0;
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #4a5568;
         }
         
         .city-name {
-            font-weight: 400;
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
         }
         
         .time-display {
-            font-size: 2rem;
-            font-weight: 200;
-            color: #333;
-            margin-bottom: 8px;
-            font-family: 'Courier New', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 4px;
         }
         
         .timezone-info {
-            color: #999;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #a0aec0;
+            font-size: 0.9rem;
         }
         
         .error {
-            margin-top: 30px;
-            padding: 20px 0;
-            border-top: 1px solid #eee;
-            color: #d32f2f;
-            text-align: center;
+            margin-top: 24px;
+            padding: 16px;
+            background: #7f1d1d;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+            color: #fecaca;
             display: none;
-            font-size: 0.9rem;
         }
         
         .loading {
             text-align: center;
-            color: #999;
-            margin-top: 30px;
+            color: #a0aec0;
+            margin-top: 20px;
             display: none;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-weight: 500;
         }
         
         .example {
-            margin-top: 40px;
-            padding: 20px 0;
-            border-top: 1px solid #eee;
-            font-size: 0.8rem;
-            color: #999;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-top: 24px;
+            padding: 16px;
+            background: #2d3748;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #a0aec0;
+            border: 1px solid #4a5568;
         }
     </style>
 </head>
@@ -194,10 +183,10 @@
                 <input type="time" id="time" name="time">
             </div>
             
-            <button type="submit" id="convertBtn">Convert</button>
+            <button type="submit" id="convertBtn">Convert Timezone</button>
         </form>
         
-        <div class="loading" id="loading">Converting...</div>
+        <div class="loading" id="loading">Converting timezone...</div>
         
         <div class="result" id="result">
             <div class="time-info">
@@ -217,7 +206,7 @@
         <div class="error" id="error"></div>
         
         <div class="example">
-            Examples: "New York", "London", "Tokyo"
+            <strong>Examples:</strong> Try "New York", "London", "Tokyo", or any major city name.
         </div>
     </div>
 
