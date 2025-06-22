@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brutalist Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial Black', 'Helvetica Neue', monospace;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .brutalist-container {
+            background: #ffffff;
+            color: #000000;
+            max-width: 600px;
+            width: 95%;
+            transform: rotate(-1deg);
+            box-shadow: 
+                8px 8px 0px #ff0000,
+                16px 16px 0px #00ff00,
+                24px 24px 0px #0000ff;
+            border: 8px solid #000000;
+            position: relative;
+        }
+
+        .header-section {
+            background: #ff0000;
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 8px solid #000000;
+            transform: rotate(1deg);
+            margin: -4px -4px 20px -4px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            line-height: 0.9;
+            text-shadow: 4px 4px 0px #000000;
+        }
+
+        .content-section {
+            padding: 40px;
+        }
+
+        .statement {
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            text-align: center;
+            background: #ffff00;
+            color: #000000;
+            padding: 20px;
+            border: 4px solid #000000;
+            transform: rotate(0.5deg);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .feature-block {
+            background: #000000;
+            color: #ffffff;
+            padding: 25px;
+            border: 4px solid #ffffff;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .feature-block:nth-child(1) {
+            background: #00ff00;
+            color: #000000;
+            transform: rotate(-1deg);
+        }
+
+        .feature-block:nth-child(2) {
+            background: #0000ff;
+            color: #ffffff;
+            transform: rotate(1deg);
+        }
+
+        .feature-block:nth-child(3) {
+            background: #ff00ff;
+            color: #000000;
+            transform: rotate(0.5deg);
+        }
+
+        .feature-block:nth-child(4) {
+            background: #00ffff;
+            color: #000000;
+            transform: rotate(-0.5deg);
+        }
+
+        .feature-block:hover {
+            transform: rotate(0deg) scale(1.05);
+            z-index: 10;
+            position: relative;
+        }
+
+        .cta-section {
+            text-align: center;
+        }
+
+        .brutalist-button {
+            background: #ff0000;
+            color: #ffffff;
+            border: 6px solid #000000;
+            font-family: inherit;
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 20px 40px;
+            cursor: pointer;
+            transform: rotate(-1deg);
+            transition: all 0.1s ease;
+            box-shadow: 6px 6px 0px #000000;
+        }
+
+        .brutalist-button:hover {
+            transform: rotate(0deg) translate(-3px, -3px);
+            box-shadow: 9px 9px 0px #000000;
+            background: #ffff00;
+            color: #000000;
+        }
+
+        .brutalist-button:active {
+            transform: rotate(0deg) translate(3px, 3px);
+            box-shadow: 3px 3px 0px #000000;
+        }
+
+        .noise-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.05;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    black 2px,
+                    black 4px
+                );
+            pointer-events: none;
+        }
+
+        .warning-strip {
+            background: #ffff00;
+            color: #000000;
+            padding: 10px;
+            text-align: center;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-top: 4px solid #000000;
+            border-bottom: 4px solid #000000;
+            margin: 20px -40px -40px -40px;
+            transform: rotate(-0.5deg);
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .brutalist-button {
+                font-size: 1.2rem;
+                padding: 15px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="brutalist-container">
+        <div class="noise-overlay"></div>
+        
+        <div class="header-section">
+            <h1>BRUTALIST</h1>
+        </div>
+        
+        <div class="content-section">
+            <div class="statement">
+                RAW. BOLD. UNCOMPROMISING.
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-block">
+                    HEAVY TYPOGRAPHY
+                </div>
+                <div class="feature-block">
+                    STARK CONTRASTS
+                </div>
+                <div class="feature-block">
+                    GEOMETRIC CHAOS
+                </div>
+                <div class="feature-block">
+                    DIGITAL CONCRETE
+                </div>
+            </div>
+            
+            <div class="cta-section">
+                <button class="brutalist-button">
+                    EMBRACE THE HARSH
+                </button>
+            </div>
+            
+            <div class="warning-strip">
+                ⚠️ NOT FOR THE FAINT OF HEART ⚠️
+            </div>
+        </div>
+    </div>
+</body>
+</html>

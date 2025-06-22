@@ -4,25 +4,37 @@ import asyncio
 import json
 import os
 import glob
-import subprocess
-import sys
-from pathlib import Path
-from typing import List, Optional, Dict, Any
+import time
+from typing import List, Optional
 from anthropic import Anthropic
-from claude_code_sdk import query, ClaudeCodeOptions
+import pyautogui
+# from claude_code_sdk import query, ClaudeCodeOptions  # SDK not available yet
 
 class ClaudeMonitor:
     def __init__(self):
-        self.claude_api_key = os.getenv('SANDWICH_ANTHROPIC_API_KEY')
-        if not self.claude_api_key:
-            raise ValueError("SANDWICH_ANTHROPIC_API_KEY environment variable must be set")
+        self.claude_api_key = self.load_config()
         self.client = Anthropic(api_key=self.claude_api_key)
         self.watch_directory = "/Users/jaidevshah/.claude/projects/-Users-jaidevshah-Desktop-sandwich-berkeley-hacks"
-        self.monitor_interval = 15
+        self.monitor_interval = 45  # Simple 45 second monitoring
         self.running = False
         self.paused = False
         self.last_file_mtime = None
         self.last_processed_file = None
+        self.stability_check_seconds = 30  # Wait 30s for stability at end of 45s cycle
+
+    def load_config(self) -> str:
+        """Load API key from config.json file."""
+        try:
+            with open('config.json', 'r') as f:
+                config = json.load(f)
+                api_key = config.get('anthropic_api_key')
+                if not api_key or api_key == "your-anthropic-api-key-here":
+                    raise ValueError("Please set your Anthropic API key in config.json")
+                return api_key
+        except FileNotFoundError:
+            raise ValueError("config.json file not found. Please create it with your Anthropic API key.")
+        except json.JSONDecodeError:
+            raise ValueError("Invalid JSON in config.json file.")
 
     def find_latest_jsonl_file(self) -> Optional[str]:
         """Find the most recently created .jsonl file in the watch directory."""
@@ -54,15 +66,18 @@ class ClaudeMonitor:
         
         # This is a placeholder for the actual voice agent implementation
         print(f"Voice agent called with context: {context}")
+        print(f"📞 Starting voice call...")
         # Simulate async voice call
         await asyncio.sleep(2)
         
-        response = "Voice call completed. User provided clarification on the error."
-        print(f"🟢 Voice call completed. Resuming monitoring...")
-        self.paused = False
-        return response
+        # Simulate user response from voice call
+        user_voice_response = "User said: I want the most minimlistic style. Do it"
+        print(f"🟢 Voice call completed.")
+        print(f"📝 User response: {user_voice_response}")
+        
+        return user_voice_response
 
-    async def call_claude_for_analysis(self, context_lines: List[str]) -> Optional[Dict[str, Any]]:
+    async def call_claude_for_analysis(self, context_lines: List[str]):
         """Call Claude API to analyze context and potentially trigger voice agent."""
         if not context_lines:
             return None
@@ -98,7 +113,7 @@ class ClaudeMonitor:
                 messages=[
                     {
                         "role": "user",
-                        "content": f"Context from recent conversation:\n{context_text}\n\nIf there is an error or question that needs to be answered by the user or multiple plans proposed, then call the voice_agent tool."
+                        "content": f"Context from recent conversation:\n{context_text}\n\n. There will be many logs but focus mostly on the last log as this is the most recent log. Use the previous logs to get an understanding of the conversation. In the last log, if there is an error or question that needs to be answered by the user or multiple plans proposed, then call the voice_agent tool."
                     }
                 ]
             )
@@ -108,8 +123,8 @@ class ClaudeMonitor:
             print(f"Error calling Claude API: {e}")
             return None
 
-    async def summarize_response(self, context_lines: List[str], voice_response: str) -> Optional[str]:
-        """Call Claude to summarize the voice agent response."""
+    async def summarize_user_instruction(self, context_lines: List[str], voice_response: str) -> Optional[str]:
+        """Call Claude to summarize the user's instruction from the voice call."""
         context_text = "\n".join(context_lines)
         
         try:
@@ -119,143 +134,50 @@ class ClaudeMonitor:
                 messages=[
                     {
                         "role": "user",
-                        "content": f"Original context:\n{context_text}\n\nVoice call response: {voice_response}\n\nPlease provide a concise summary of this interaction and any key information that should be communicated back to the terminal."
+                        "content": f"Original context from code monitoring:\n{context_text}\n\nUser's response from voice call: {voice_response}\n\nExtract ONLY the user's actionable instruction from the voice response. Return ONLY the clean instruction text that should be typed at the cursor - no explanations, no formatting, no extra text. Just the raw instruction the user wants executed."
                     }
                 ]
             )
             
             return response.content[0].text if response.content else None
         except Exception as e:
-            print(f"Error summarizing response: {e}")
+            print(f"Error summarizing user instruction: {e}")
             return None
 
-    def inject_text_to_active_terminal(self, text: str) -> bool:
-        """Inject text into the currently active terminal application."""
-        import platform
-        
-        system = platform.system()
-        
-        if system == "Darwin":  # macOS
-            return self._inject_text_macos(text)
-        elif system == "Linux":
-            return self._inject_text_linux(text)
-        elif system == "Windows":
-            return self._inject_text_windows(text)
-        else:
-            print(f"❌ Unsupported platform: {system}")
-            return False
-    
-    def _inject_text_macos(self, text: str) -> bool:
-        """Inject text on macOS using AppleScript."""
+    def type_response_at_cursor(self, message: str) -> bool:
+        """Type the user instruction at the current cursor location using pyautogui."""
         try:
-            # Escape special characters for AppleScript
-            escaped_text = text.replace('"', '\\"').replace('\\', '\\\\')
+            # Add a small delay to ensure we don't interfere with other operations
+            import time
+            time.sleep(1.0)  # Longer delay to ensure user is ready
             
-            # AppleScript to type text in the frontmost application
-            applescript = f'''
-            tell application "System Events"
-                keystroke "{escaped_text}"
-            end tell
-            '''
+            # Type the user instruction directly without extra formatting
+            pyautogui.write(message.replace('\n', ' '), interval=0.02)  # ~50 chars/s for natural typing
             
-            result = subprocess.run(
-                ['osascript', '-e', applescript],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
+            # Press Enter after typing the user instruction
+            pyautogui.press('enter')
             
-            if result.returncode == 0:
-                print(f"✅ Successfully injected text to active terminal (macOS)")
-                return True
-            else:
-                print(f"❌ AppleScript error: {result.stderr}")
-                return False
-                
-        except subprocess.TimeoutExpired:
-            print(f"❌ Timeout injecting text to terminal")
-            return False
-        except Exception as e:
-            print(f"❌ Error injecting text (macOS): {e}")
-            return False
-    
-    def _inject_text_linux(self, text: str) -> bool:
-        """Inject text on Linux using xdotool."""
-        try:
-            # Check if xdotool is available
-            subprocess.run(['which', 'xdotool'], check=True, capture_output=True)
-            
-            # Use xdotool to type text
-            result = subprocess.run(
-                ['xdotool', 'type', text],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            
-            if result.returncode == 0:
-                print(f"✅ Successfully injected text to active terminal (Linux)")
-                return True
-            else:
-                print(f"❌ xdotool error: {result.stderr}")
-                return False
-                
-        except subprocess.CalledProcessError:
-            print(f"❌ xdotool not found. Install with: sudo apt-get install xdotool")
-            return False
-        except Exception as e:
-            print(f"❌ Error injecting text (Linux): {e}")
-            return False
-    
-    def _inject_text_windows(self, text: str) -> bool:
-        """Inject text on Windows using PowerShell."""
-        try:
-            # Use PowerShell to send keystrokes
-            powershell_script = f'''
-            Add-Type -AssemblyName System.Windows.Forms
-            [System.Windows.Forms.SendKeys]::SendWait("{text}")
-            '''
-            
-            result = subprocess.run(
-                ['powershell', '-Command', powershell_script],
-                capture_output=True,
-                text=True,
-                timeout=5
-            )
-            
-            if result.returncode == 0:
-                print(f"✅ Successfully injected text to active terminal (Windows)")
-                return True
-            else:
-                print(f"❌ PowerShell error: {result.stderr}")
-                return False
+            print(f"✅ Successfully typed user instruction at cursor location and pressed Enter")
+            return True
                 
         except Exception as e:
-            print(f"❌ Error injecting text (Windows): {e}")
+            print(f"❌ Error typing user instruction with pyautogui: {e}")
             return False
 
-    async def send_to_claude_code_terminal(self, message: str):
-        """Send a message back to the Claude Code terminal by injecting text."""
-        print(f"\n=== INJECTING TO ACTIVE TERMINAL ===")
-        print(f"Message: {message}")
-        print(f"=== END MESSAGE ===\n")
+    async def send_response_to_cursor(self, message: str):
+        """Send a message by typing it at the current cursor location."""
+        print(f"\n=== TYPING USER INSTRUCTION AT CURSOR ===")
+        print(f"Instruction: {message}")
+        print(f"=== END INSTRUCTION ===\n")
         
-        # Format the message for injection
-        formatted_message = f"\n\n🤖 Monitor Alert: {message}\n"
-        
-        # Try to inject text into active terminal
-        success = self.inject_text_to_active_terminal(formatted_message)
+        # Type the user instruction directly (no extra formatting)
+        success = self.type_response_at_cursor(message)
         
         if not success:
-            print(f"💡 Falling back to console output:")
-            print(f"\n=== CLAUDE MONITOR RESPONSE ===")
+            print(f"💡 Fallback - User instruction:")
+            print(f"\n=== USER INSTRUCTION ===")
             print(message)
-            print(f"=== END RESPONSE ===\n")
-        
-        # Resume monitoring after sending terminal instruction
-        if self.paused:
-            print(f"🟢 Resuming monitoring after terminal instruction...")
-            self.paused = False
+            print(f"=== END INSTRUCTION ===\n")
 
     async def process_latest_file(self):
         """Process the latest JSONL file and handle any errors/questions."""
@@ -267,23 +189,38 @@ class ClaudeMonitor:
         # Check if the file has changed since last processing
         current_mtime = os.path.getmtime(latest_file)
         
+        # Skip if file unchanged
         if (self.last_processed_file == latest_file and 
             self.last_file_mtime == current_mtime):
-            print(f"📄 File {os.path.basename(latest_file)} unchanged - skipping Claude API call")
             return
 
-        # Update tracking variables
+        print(f"📄 File {os.path.basename(latest_file)} changed - checking stability...")
+        
+        # Check stability - wait and see if file changes again
+        await asyncio.sleep(self.stability_check_seconds)
+        
+        # Re-check file after stability wait
+        latest_file_after_wait = self.find_latest_jsonl_file()
+        mtime_after_wait = os.path.getmtime(latest_file_after_wait) if latest_file_after_wait else 0
+        
+        if (latest_file_after_wait != latest_file or mtime_after_wait != current_mtime):
+            print(f"📄 File changed during stability check - skipping (will retry next cycle)")
+            return
+            
+        print(f"✅ File stable - processing {os.path.basename(latest_file)}")
+        
+        # Update tracking
         self.last_processed_file = latest_file
         self.last_file_mtime = current_mtime
 
-        last_lines = self.read_last_n_lines(latest_file, 5)
+        last_lines = self.read_last_n_lines(latest_file, 15)
         if not last_lines:
             print("No lines found in latest file")
             return
 
         # Log the lines we're processing
         print(f"\n--- Processing file: {os.path.basename(latest_file)} (CHANGED) ---")
-        print("Last 5 lines:")
+        print("Last 15 lines:")
         for i, line in enumerate(last_lines, 1):
             # Truncate long lines for readability
             display_line = line[:200] + "..." if len(line) > 200 else line
@@ -298,38 +235,57 @@ class ClaudeMonitor:
 
         # Check if Claude wants to use the voice_agent tool
         voice_call_made = False
-        for content_block in response.content:
-            if content_block.type == "tool_use" and content_block.name == "voice_agent":
-                # Extract tool parameters
-                tool_input = content_block.input
-                reason = tool_input.get("reason", "")
-                context = tool_input.get("context", "")
+        if hasattr(response, 'content') and response.content:
+            for content_block in response.content:
+                if content_block.type == "tool_use" and content_block.name == "voice_agent":
+                    # Extract tool parameters
+                    tool_input = content_block.input
+                    reason = getattr(tool_input, "reason", "") if hasattr(tool_input, "reason") else ""
+                    context = getattr(tool_input, "context", "") if hasattr(tool_input, "context") else ""
                 
-                print(f"🔊 CLAUDE DETECTED ISSUE - Initiating voice call")
-                print(f"Reason: {reason}")
-                print(f"Context: {context[:100]}..." if len(context) > 100 else f"Context: {context}")
-                
-                # Call the voice agent
-                voice_response = await self.voice_agent(context)
-                
-                # Summarize the response
-                summary = await self.summarize_response(last_lines, voice_response)
-                
-                if summary:
-                    print(f"📝 CLAUDE SUMMARY:")
-                    print(summary)
-                    # Send summary back to Claude Code terminal
-                    await self.send_to_claude_code_terminal(summary)
-                
-                voice_call_made = True
-            elif content_block.type == "text":
-                print(f"💭 CLAUDE RESPONSE: {content_block.text}")
+                    print(f"🔊 CLAUDE DETECTED ISSUE - Initiating voice call")
+                    print(f"Reason: {reason}")
+                    print(f"Context: {context[:100]}..." if len(context) > 100 else f"Context: {context}")
+                    
+                    # Call the voice agent
+                    voice_response = await self.voice_agent(context)
+                    
+                    # Extract user instruction directly from voice response
+                    print(f"🧠 Extracting user instruction from voice response...")
+                    
+                    # Simple extraction - get text after "User said:"
+                    if "User said:" in voice_response:
+                        user_instruction = voice_response.split("User said:", 1)[1].strip()
+                        # Remove quotes if present
+                        if user_instruction.startswith('"') and user_instruction.endswith('"'):
+                            user_instruction = user_instruction[1:-1]
+                        if user_instruction.startswith("'") and user_instruction.endswith("'"):
+                            user_instruction = user_instruction[1:-1]
+                    else:
+                        # Fallback - use the whole voice response
+                        user_instruction = voice_response.strip()
+                    
+                    if user_instruction:
+                        print(f"📝 USER INSTRUCTION:")
+                        print(user_instruction)
+                        # Type the user's actual words at cursor location
+                        await self.send_response_to_cursor(user_instruction)
+                    else:
+                        print(f"❌ Could not extract user instruction from voice response")
+                    
+                    # Resume monitoring after completing the full flow
+                    print(f"🟢 Resuming monitoring...")
+                    self.paused = False
+                    
+                    voice_call_made = True
+                elif content_block.type == "text":
+                    print(f"💭 CLAUDE RESPONSE: {content_block.text}")
         
         if not voice_call_made:
             print("✅ No issues detected - continuing monitoring")
 
     async def monitor_loop(self):
-        """Main monitoring loop that runs every 15 seconds."""
+        """Main monitoring loop - check every 45 seconds."""
         self.running = True
         print(f"🚀 Starting Claude monitor - watching {self.watch_directory}")
         print(f"⏰ Checking every {self.monitor_interval} seconds")
@@ -342,9 +298,7 @@ class ClaudeMonitor:
                     await asyncio.sleep(1)  # Short sleep while paused
                     continue
                     
-                print(f"🔍 [{asyncio.get_event_loop().time():.1f}] Checking for latest JSONL file...")
                 await self.process_latest_file()
-                print(f"⏳ Waiting {self.monitor_interval} seconds until next check...\n")
                 await asyncio.sleep(self.monitor_interval)
             except KeyboardInterrupt:
                 print("\n🛑 Monitoring stopped by user")

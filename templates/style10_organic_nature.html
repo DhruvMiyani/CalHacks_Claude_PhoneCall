@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organic Nature Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #2d5016 0%, #3e6b21 30%, #4a7c59 60%, #5c8a6a 100%);
+            color: #2d3e1f;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .leaves-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(139, 195, 74, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(76, 175, 80, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 60% 30%, rgba(104, 159, 56, 0.1) 0%, transparent 40%);
+            z-index: -1;
+        }
+
+        .organic-container {
+            background: rgba(255, 255, 255, 0.95);
+            max-width: 500px;
+            width: 90%;
+            border-radius: 50px 20px 60px 30px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .organic-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle, rgba(139, 195, 74, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #8bc34a, #4caf50);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-radius: 40px 15px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .nature-quote {
+            text-align: center;
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #388e3c;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 20px;
+            background: rgba(139, 195, 74, 0.1);
+            border-radius: 30px 10px 30px 10px;
+        }
+
+        .nature-quote::before {
+            content: '"';
+            font-size: 3rem;
+            color: #8bc34a;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-family: serif;
+        }
+
+        .features-garden {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature-seed {
+            background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
+            color: #2e7d32;
+            padding: 25px 20px;
+            border-radius: 25px 10px 25px 10px;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-seed:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135degE, #8bc34a, #4caf50);
+            color: white;
+        }
+
+        .feature-seed::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #4caf50, #388e3c);
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .organic-button {
+            background: linear-gradient(135deg, #8bc34a, #4caf50);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 50px;
+            width: 100%;
+            transition: all 0.4s ease;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+        }
+
+        .organic-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .organic-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(76, 175, 80, 0.4);
+        }
+
+        .organic-button:hover::before {
+            left: 100%;
+        }
+
+        .floating-leaf {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #8bc34a;
+            border-radius: 0 100% 0 100%;
+            opacity: 0.3;
+            animation: float-leaf 8s ease-in-out infinite;
+        }
+
+        .leaf1 {
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .leaf2 {
+            top: 20%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .leaf3 {
+            bottom: 30%;
+            left: 15%;
+            animation-delay: 4s;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes float-leaf {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translateY(-15px) rotate(180deg);
+                opacity: 0.6;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .features-garden {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .organic-button {
+                padding: 15px 30px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="leaves-bg"></div>
+    
+    <div class="organic-container">
+        <div class="floating-leaf leaf1"></div>
+        <div class="floating-leaf leaf2"></div>
+        <div class="floating-leaf leaf3"></div>
+        
+        <div class="header">
+            <h1>Organic Nature</h1>
+            <div class="subtitle">Grow with Natural Beauty</div>
+        </div>
+        
+        <div class="content">
+            <div class="nature-quote">
+                In every walk with nature, one receives far more than they seek
+            </div>
+            
+            <div class="features-garden">
+                <div class="feature-seed">
+                    <span class="feature-icon">🌱</span>
+                    Fresh Growth
+                </div>
+                <div class="feature-seed">
+                    <span class="feature-icon">🍃</span>
+                    Natural Flow
+                </div>
+                <div class="feature-seed">
+                    <span class="feature-icon">🌿</span>
+                    Organic Forms
+                </div>
+                <div class="feature-seed">
+                    <span class="feature-icon">🌳</span>
+                    Rooted Strength
+                </div>
+            </div>
+            
+            <button class="organic-button">
+                Embrace Natural Beauty
+            </button>
+        </div>
+    </div>
+</body>
+</html>

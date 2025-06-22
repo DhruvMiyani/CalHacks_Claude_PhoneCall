@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TimeSync - Minimalist Clean</title>
+    <title>TimeSync - Neomorphism</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,34 +14,36 @@
         }
         
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background: #fafafa;
+            font-family: 'Poppins', sans-serif;
+            background: #e0e5ec;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
-            color: #333;
+            padding: 20px;
+            color: #31344b;
         }
         
         .container {
-            background: #ffffff;
-            border-radius: 2px;
-            padding: 60px 40px;
+            background: #e0e5ec;
+            border-radius: 30px;
+            padding: 50px 40px;
             width: 100%;
-            max-width: 480px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e0e0e0;
+            max-width: 500px;
+            box-shadow: 
+                20px 20px 60px #bebebe,
+                -20px -20px 60px #ffffff;
         }
         
         h1 {
-            font-size: 2rem;
-            font-weight: 300;
-            color: #333;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #31344b;
             text-align: center;
             margin-bottom: 50px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            text-shadow: 
+                2px 2px 4px #bebebe,
+                -2px -2px 4px #ffffff;
         }
         
         .form-group {
@@ -48,52 +52,66 @@
         
         label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 400;
-            color: #666;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 500;
+            color: #31344b;
+            font-size: 0.9rem;
         }
         
         input {
             width: 100%;
-            padding: 15px 0;
+            padding: 18px 24px;
             border: none;
-            border-bottom: 1px solid #ddd;
+            border-radius: 25px;
             font-size: 16px;
+            background: #e0e5ec;
+            color: #31344b;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 
+                inset 8px 8px 16px #bebebe,
+                inset -8px -8px 16px #ffffff;
             transition: all 0.3s ease;
-            background: transparent;
-            color: #333;
         }
         
         input:focus {
             outline: none;
-            border-bottom-color: #333;
+            box-shadow: 
+                inset 12px 12px 24px #bebebe,
+                inset -12px -12px 24px #ffffff;
         }
         
         input::placeholder {
-            color: #999;
+            color: #9baacf;
         }
         
         button {
             width: 100%;
-            background: #333;
-            color: white;
+            background: #e0e5ec;
+            color: #31344b;
             border: none;
-            padding: 18px;
-            border-radius: 0;
-            font-size: 14px;
-            font-weight: 400;
+            padding: 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: 
+                8px 8px 16px #bebebe,
+                -8px -8px 16px #ffffff;
             margin-top: 20px;
         }
         
         button:hover {
-            background: #000;
+            box-shadow: 
+                12px 12px 24px #bebebe,
+                -12px -12px 24px #ffffff;
+        }
+        
+        button:active {
+            box-shadow: 
+                inset 8px 8px 16px #bebebe,
+                inset -8px -8px 16px #ffffff;
         }
         
         button:disabled {
@@ -103,74 +121,79 @@
         
         .result {
             margin-top: 40px;
-            padding: 30px 0;
-            border-top: 1px solid #eee;
+            padding: 30px;
+            background: #e0e5ec;
+            border-radius: 25px;
             display: none;
+            box-shadow: 
+                inset 8px 8px 16px #bebebe,
+                inset -8px -8px 16px #ffffff;
         }
         
         .time-info {
             display: grid;
-            gap: 30px;
+            gap: 25px;
         }
         
         .time-box {
+            background: #e0e5ec;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 
+                8px 8px 16px #bebebe,
+                -8px -8px 16px #ffffff;
             text-align: center;
-            padding: 20px 0;
         }
         
         .city-name {
-            font-weight: 400;
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-weight: 600;
+            color: #31344b;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
         }
         
         .time-display {
             font-size: 2rem;
-            font-weight: 200;
-            color: #333;
+            font-weight: 300;
+            color: #6c5ce7;
             margin-bottom: 8px;
-            font-family: 'Courier New', monospace;
         }
         
         .timezone-info {
-            color: #999;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #74b9ff;
+            font-size: 0.9rem;
         }
         
         .error {
             margin-top: 30px;
-            padding: 20px 0;
-            border-top: 1px solid #eee;
-            color: #d32f2f;
-            text-align: center;
+            padding: 20px;
+            background: #e0e5ec;
+            border-radius: 20px;
+            color: #e17055;
             display: none;
-            font-size: 0.9rem;
+            box-shadow: 
+                inset 8px 8px 16px #bebebe,
+                inset -8px -8px 16px #ffffff;
         }
         
         .loading {
             text-align: center;
-            color: #999;
+            color: #74b9ff;
             margin-top: 30px;
             display: none;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-weight: 500;
         }
         
         .example {
-            margin-top: 40px;
-            padding: 20px 0;
-            border-top: 1px solid #eee;
-            font-size: 0.8rem;
-            color: #999;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #e0e5ec;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #636e72;
+            box-shadow: 
+                inset 8px 8px 16px #bebebe,
+                inset -8px -8px 16px #ffffff;
         }
     </style>
 </head>
@@ -194,10 +217,10 @@
                 <input type="time" id="time" name="time">
             </div>
             
-            <button type="submit" id="convertBtn">Convert</button>
+            <button type="submit" id="convertBtn">Convert Timezone</button>
         </form>
         
-        <div class="loading" id="loading">Converting...</div>
+        <div class="loading" id="loading">Converting timezone...</div>
         
         <div class="result" id="result">
             <div class="time-info">
@@ -217,7 +240,7 @@
         <div class="error" id="error"></div>
         
         <div class="example">
-            Examples: "New York", "London", "Tokyo"
+            <strong>Examples:</strong> Try "New York", "London", "Tokyo", or any major city name.
         </div>
     </div>
 

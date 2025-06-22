@@ -4,3 +4,4 @@ timezonefinder==6.2.0
 requests==2.31.0
 anthropic>=0.7.0
 claude-code-sdk
+pyautogui

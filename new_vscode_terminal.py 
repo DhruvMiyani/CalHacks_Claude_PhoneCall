@@ -1,0 +1,21 @@
+import subprocess
+import shutil
+import sys
+from pathlib import Path
+
+def new_vscode_terminal():
+    # Locate the `code` CLI (raises if missing)
+    code_cli = shutil.which("code") or shutil.which("code.cmd")
+    if not code_cli:
+        sys.exit("VS Code CLI not on PATH - install it first.")
+
+    # --reuse-window keeps the current window; --command runs any VS Code command id
+    subprocess.run([
+        code_cli,
+        "--reuse-window",
+        "--command",
+        "workbench.action.terminal.new"      # VS Code’s internal id for “New Integrated Terminal”
+    ])
+    
+if __name__ == "__main__":
+    new_vscode_terminal()
