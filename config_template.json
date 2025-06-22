@@ -1,0 +1,43 @@
+{
+  "name": "example-project",
+  "description": "Example configuration for generic orchestration agent",
+  "systemPrompt": "You are an intelligent orchestration agent that helps users with various tasks.",
+  "tools": [
+    {
+      "name": "example_tool",
+      "description": "An example tool that demonstrates the structure",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "input_text": {
+            "type": "string",
+            "description": "Input text to process"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": [
+              "analyze",
+              "transform",
+              "validate"
+            ],
+            "description": "Type of action to perform"
+          }
+        },
+        "required": [
+          "input_text"
+        ]
+      }
+    }
+  ],
+  "context": {
+    "project_type": "generic",
+    "framework": "flexible",
+    "integration_type": "api_based"
+  },
+  "config": {
+    "api_key": "your_api_key_here",
+    "base_url": "https://api.example.com",
+    "timeout": 30,
+    "retry_attempts": 3
+  }
+}
