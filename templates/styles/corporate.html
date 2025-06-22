@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Time Converter - Enterprise Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            background-image: 
+                linear-gradient(135deg, rgba(74, 144, 226, 0.02) 0%, rgba(80, 201, 195, 0.02) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #2c3e50;
+        }
+        
+        .container {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 48px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.02),
+                0 8px 16px rgba(0, 0, 0, 0.04),
+                0 16px 32px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e9ecef;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 24px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        
+        .form-section {
+            margin-bottom: 32px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.95rem;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: #ffffff;
+            color: #495057;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+        
+        input::placeholder {
+            color: #adb5bd;
+        }
+        
+        .btn-container {
+            text-align: center;
+            margin-top: 32px;
+        }
+        
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 200px;
+        }
+        
+        button:hover {
+            background: #357abd;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result-section {
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 2px solid #e9ecef;
+            display: none;
+        }
+        
+        .result-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .result-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .result-subtitle {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .time-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .time-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .city-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .time-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4a90e2;
+            margin-bottom: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .timezone-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .error-section {
+            margin-top: 32px;
+            padding: 16px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            color: #721c24;
+            display: none;
+        }
+        
+        .loading-section {
+            text-align: center;
+            margin-top: 24px;
+            color: #6c757d;
+            display: none;
+        }
+        
+        .info-section {
+            margin-top: 32px;
+            padding: 16px;
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            color: #0c5460;
+            font-size: 0.9rem;
+        }
+        
+        .powered-by {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e9ecef;
+            color: #adb5bd;
+            font-size: 0.85rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 32px 24px;
+            }
+            
+            .form-row,
+            .time-comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Global Time Converter</h1>
+            <div class="subtitle">Enterprise Timezone Management Solution</div>
+        </div>
+        
+        <form id="timezoneForm">
+            <div class="form-section">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cityA">Source Location</label>
+                        <input type="text" id="cityA" name="cityA" placeholder="Enter city name (e.g., New York)" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cityB">Target Location</label>
+                        <input type="text" id="cityB" name="cityB" placeholder="Enter city name (e.g., London)" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="time">Specific Time (Optional)</label>
+                    <input type="time" id="time" name="time" placeholder="Leave blank for current time">
+                </div>
+            </div>
+            
+            <div class="btn-container">
+                <button type="submit" id="convertBtn">Calculate Time Conversion</button>
+            </div>
+        </form>
+        
+        <div class="loading-section" id="loading">
+            Processing timezone conversion...
+        </div>
+        
+        <div class="result-section" id="result">
+            <div class="result-header">
+                <div class="result-title">Timezone Conversion Results</div>
+                <div class="result-subtitle">Accurate time mapping between locations</div>
+            </div>
+            
+            <div class="time-comparison">
+                <div class="time-card">
+                    <div class="city-label" id="cityAName">Source Location</div>
+                    <div class="time-value" id="timeA">--:--</div>
+                    <div class="timezone-label" id="timezoneA">Timezone Information</div>
+                </div>
+                <div class="time-card">
+                    <div class="city-label" id="cityBName">Target Location</div>
+                    <div class="time-value" id="timeB">--:--</div>
+                    <div class="timezone-label" id="timezoneB">Timezone Information</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="error-section" id="error"></div>
+        
+        <div class="info-section">
+            <strong>Instructions:</strong> Enter the names of two cities to calculate the time difference. 
+            Common formats include "New York", "London", "Tokyo", "Sydney", etc. 
+            Leave the time field blank to use the current time, or specify a particular time for conversion.
+        </div>
+        
+        <div class="powered-by">
+            Powered by OpenStreetMap Geocoding & Global Timezone Database
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('timezoneForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const cityA = document.getElementById('cityA').value.trim();
+            const cityB = document.getElementById('cityB').value.trim();
+            const time = document.getElementById('time').value.trim();
+            
+            if (!cityA || !cityB) {
+                showError('Both source and target locations are required for conversion.');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('convertBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ city_a: cityA, city_b: cityB, time: time })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data);
+                } else {
+                    showError(data.error || 'An error occurred during timezone conversion.');
+                }
+            } catch (error) {
+                showError('Network connectivity error: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('convertBtn').disabled = false;
+            }
+        });
+        
+        function showResult(data) {
+            document.getElementById('cityAName').textContent = data.city_a;
+            document.getElementById('cityBName').textContent = data.city_b;
+            document.getElementById('timeA').textContent = data.time_a.split(' ').slice(1, 2).join(' ');
+            document.getElementById('timeB').textContent = data.time_b.split(' ').slice(1, 2).join(' ');
+            document.getElementById('timezoneA').textContent = data.timezone_a + ' • ' + data.time_a.split(' ')[0];
+            document.getElementById('timezoneB').textContent = data.timezone_b + ' • ' + data.time_b.split(' ')[0];
+            
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

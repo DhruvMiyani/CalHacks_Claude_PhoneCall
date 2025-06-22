@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏰ TimeMachine - Retro Time Converter</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: #1a0033;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #ff00ff 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #00ffff 0%, transparent 50%),
+                linear-gradient(135deg, #1a0033 0%, #0d001a 50%, #1a0033 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #00ff00;
+            overflow-x: hidden;
+        }
+        
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                transparent 50%,
+                rgba(0, 255, 0, 0.02) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .container {
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 0;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 
+                0 0 20px #00ff00,
+                inset 0 0 20px rgba(0, 255, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff00, #ff00ff, #00ffff, #00ff00);
+            z-index: -1;
+            animation: borderGlow 2s linear infinite;
+        }
+        
+        @keyframes borderGlow {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 10px;
+            animation: textGlow 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes textGlow {
+            from { text-shadow: 0 0 10px #00ff00; }
+            to { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
+        }
+        
+        .subtitle {
+            color: #ff00ff;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #00ffff;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #00ff00;
+            border-radius: 0;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            font-family: 'Orbitron', monospace;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        input::placeholder {
+            color: rgba(0, 255, 0, 0.5);
+            text-transform: uppercase;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        button {
+            width: 100%;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            color: #000;
+            border: 2px solid #00ff00;
+            padding: 18px;
+            border-radius: 0;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Orbitron', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:hover {
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.8);
+            transform: scale(1.02);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border: 2px solid #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+            display: none;
+            position: relative;
+        }
+        
+        .result::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #00ff00, #00ffff);
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+        }
+        
+        .time-info {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .time-box {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ff00;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .city-name {
+            font-weight: 700;
+            color: #ff00ff;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+        
+        .time-display {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #00ff00;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px #00ff00;
+            font-family: 'Orbitron', monospace;
+            animation: timeFlicker 0.1s infinite alternate;
+        }
+        
+        @keyframes timeFlicker {
+            0% { opacity: 1; }
+            100% { opacity: 0.95; }
+        }
+        
+        .timezone-info {
+            color: #00ffff;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px #00ffff;
+        }
+        
+        .error {
+            margin-top: 25px;
+            padding: 20px;
+            border: 2px solid #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff0000;
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px #ff0000;
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #ff00ff;
+            margin-top: 20px;
+            display: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: loadingPulse 1s ease-in-out infinite alternate;
+        }
+        
+        @keyframes loadingPulse {
+            from { opacity: 0.5; }
+            to { opacity: 1; }
+        }
+        
+        .example {
+            margin-top: 25px;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            background: rgba(0, 255, 0, 0.05);
+            font-size: 0.8rem;
+            color: #00ff00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        
+        .copyright {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            color: rgba(0, 255, 0, 0.3);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>⏰ TIMEMACHINE</h1>
+            <div class="subtitle">Retro Time Converter v2.0</div>
+        </div>
+        
+        <form id="timezoneForm">
+            <div class="form-group">
+                <label for="cityA">▶ Source Location</label>
+                <input type="text" id="cityA" name="cityA" placeholder="NEW YORK, LONDON, TOKYO..." required>
+            </div>
+            
+            <div class="form-group">
+                <label for="cityB">▶ Target Location</label>
+                <input type="text" id="cityB" name="cityB" placeholder="LOS ANGELES, PARIS, SYDNEY..." required>
+            </div>
+            
+            <div class="form-group">
+                <label for="time">▶ Time Input (Optional)</label>
+                <input type="time" id="time" name="time">
+            </div>
+            
+            <button type="submit" id="convertBtn">◆ EXECUTE CONVERSION ◆</button>
+        </form>
+        
+        <div class="loading" id="loading">◆ PROCESSING TIME DATA ◆</div>
+        
+        <div class="result" id="result">
+            <div class="time-info">
+                <div class="time-box">
+                    <div class="city-name" id="cityAName">SOURCE</div>
+                    <div class="time-display" id="timeA">00:00</div>
+                    <div class="timezone-info" id="timezoneA">TIMEZONE DATA</div>
+                </div>
+                <div class="time-box">
+                    <div class="city-name" id="cityBName">TARGET</div>
+                    <div class="time-display" id="timeB">00:00</div>
+                    <div class="timezone-info" id="timezoneB">TIMEZONE DATA</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="error" id="error">◆ ERROR ◆</div>
+        
+        <div class="example">
+            ◆ INPUT MAJOR CITIES FOR OPTIMAL RESULTS ◆
+        </div>
+    </div>
+    
+    <div class="copyright">© 1985 TIMEMACHINE SYSTEMS</div>
+
+    <script>
+        document.getElementById('timezoneForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const cityA = document.getElementById('cityA').value.trim();
+            const cityB = document.getElementById('cityB').value.trim();
+            const time = document.getElementById('time').value.trim();
+            
+            if (!cityA || !cityB) {
+                showError('◆ BOTH LOCATIONS REQUIRED ◆');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('convertBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ city_a: cityA, city_b: cityB, time: time })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data);
+                } else {
+                    showError('◆ ' + (data.error || 'SYSTEM ERROR').toUpperCase() + ' ◆');
+                }
+            } catch (error) {
+                showError('◆ NETWORK ERROR: ' + error.message.toUpperCase() + ' ◆');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('convertBtn').disabled = false;
+            }
+        });
+        
+        function showResult(data) {
+            document.getElementById('cityAName').textContent = '◆ ' + data.city_a.toUpperCase() + ' ◆';
+            document.getElementById('cityBName').textContent = '◆ ' + data.city_b.toUpperCase() + ' ◆';
+            document.getElementById('timeA').textContent = data.time_a.split(' ').slice(1, 2).join(' ');
+            document.getElementById('timeB').textContent = data.time_b.split(' ').slice(1, 2).join(' ');
+            document.getElementById('timezoneA').textContent = (data.timezone_a + ' • ' + data.time_a.split(' ')[0]).toUpperCase();
+            document.getElementById('timezoneB').textContent = (data.timezone_b + ' • ' + data.time_b.split(' ')[0]).toUpperCase();
+            
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

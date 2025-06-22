@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeSync - Dark Professional</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0e27;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #ffffff;
+        }
+        
+        .container {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+            border: 1px solid #2d3748;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #60a5fa;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: -0.5px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+        }
+        
+        input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #2d3748;
+            color: #ffffff;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            background: #60a5fa;
+            color: #0a0e27;
+            border: none;
+            padding: 18px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #3b82f6;
+            transform: translateY(-1px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            transform: none;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 32px;
+            padding: 24px;
+            background: #2d3748;
+            border-radius: 12px;
+            border-left: 4px solid #60a5fa;
+            display: none;
+        }
+        
+        .time-info {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .time-box {
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #4a5568;
+        }
+        
+        .city-name {
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .time-display {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 4px;
+        }
+        
+        .timezone-info {
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+        
+        .error {
+            margin-top: 24px;
+            padding: 16px;
+            background: #7f1d1d;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+            color: #fecaca;
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #a0aec0;
+            margin-top: 20px;
+            display: none;
+            font-weight: 500;
+        }
+        
+        .example {
+            margin-top: 24px;
+            padding: 16px;
+            background: #2d3748;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #a0aec0;
+            border: 1px solid #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TimeSync</h1>
+        
+        <form id="timezoneForm">
+            <div class="form-group">
+                <label for="cityA">From City</label>
+                <input type="text" id="cityA" name="cityA" placeholder="New York, London, Tokyo..." required>
+            </div>
+            
+            <div class="form-group">
+                <label for="cityB">To City</label>
+                <input type="text" id="cityB" name="cityB" placeholder="Los Angeles, Paris, Sydney..." required>
+            </div>
+            
+            <div class="form-group">
+                <label for="time">Time (Optional)</label>
+                <input type="time" id="time" name="time">
+            </div>
+            
+            <button type="submit" id="convertBtn">Convert Timezone</button>
+        </form>
+        
+        <div class="loading" id="loading">Converting timezone...</div>
+        
+        <div class="result" id="result">
+            <div class="time-info">
+                <div class="time-box">
+                    <div class="city-name" id="cityAName"></div>
+                    <div class="time-display" id="timeA"></div>
+                    <div class="timezone-info" id="timezoneA"></div>
+                </div>
+                <div class="time-box">
+                    <div class="city-name" id="cityBName"></div>
+                    <div class="time-display" id="timeB"></div>
+                    <div class="timezone-info" id="timezoneB"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="example">
+            <strong>Examples:</strong> Try "New York", "London", "Tokyo", or any major city name.
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('timezoneForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const cityA = document.getElementById('cityA').value.trim();
+            const cityB = document.getElementById('cityB').value.trim();
+            const time = document.getElementById('time').value.trim();
+            
+            if (!cityA || !cityB) {
+                showError('Please enter both cities');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('convertBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ city_a: cityA, city_b: cityB, time: time })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data);
+                } else {
+                    showError(data.error || 'An error occurred');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('convertBtn').disabled = false;
+            }
+        });
+        
+        function showResult(data) {
+            document.getElementById('cityAName').textContent = data.city_a;
+            document.getElementById('cityBName').textContent = data.city_b;
+            document.getElementById('timeA').textContent = data.time_a.split(' ').slice(1, 2).join(' ');
+            document.getElementById('timeB').textContent = data.time_b.split(' ').slice(1, 2).join(' ');
+            document.getElementById('timezoneA').textContent = data.timezone_a + ' • ' + data.time_a.split(' ')[0];
+            document.getElementById('timezoneB').textContent = data.timezone_b + ' • ' + data.time_b.split(' ')[0];
+            
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

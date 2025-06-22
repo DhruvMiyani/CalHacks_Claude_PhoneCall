@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timezone Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="time"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus, input[type="time"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e8f5e8;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+            display: none;
+        }
+        .error {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #ffe8e8;
+            border-radius: 5px;
+            border-left: 4px solid #f44336;
+            color: #d32f2f;
+            display: none;
+        }
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .time-box {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 5px;
+            flex: 1;
+            min-width: 250px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .city-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 18px;
+        }
+        .time-display {
+            font-size: 24px;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+        .timezone-info {
+            color: #666;
+            font-size: 14px;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            display: none;
+        }
+        .example {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Timezone Converter</h1>
+        
+        <form id="timezoneForm">
+            <div class="form-group">
+                <label for="cityA">From City:</label>
+                <input type="text" id="cityA" name="cityA" placeholder="e.g., New York, London, Tokyo" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="cityB">To City:</label>
+                <input type="text" id="cityB" name="cityB" placeholder="e.g., Los Angeles, Paris, Sydney" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="time">Time (optional - leave blank for current time):</label>
+                <input type="time" id="time" name="time" placeholder="HH:MM">
+            </div>
+            
+            <button type="submit" id="convertBtn">Convert Timezone</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            Converting timezone...
+        </div>
+        
+        <div class="result" id="result">
+            <div class="time-info">
+                <div class="time-box">
+                    <div class="city-name" id="cityAName"></div>
+                    <div class="time-display" id="timeA"></div>
+                    <div class="timezone-info" id="timezoneA"></div>
+                </div>
+                <div class="time-box">
+                    <div class="city-name" id="cityBName"></div>
+                    <div class="time-display" id="timeB"></div>
+                    <div class="timezone-info" id="timezoneB"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="example">
+            <strong>Examples:</strong><br>
+            • Cities: "New York", "London", "Tokyo", "Sydney", "Los Angeles"<br>
+            • Time: Leave blank for current time, or enter specific time (e.g., 14:30 for 2:30 PM)
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('timezoneForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const cityA = document.getElementById('cityA').value.trim();
+            const cityB = document.getElementById('cityB').value.trim();
+            const time = document.getElementById('time').value.trim();
+            
+            if (!cityA || !cityB) {
+                showError('Please enter both cities');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('convertBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        city_a: cityA,
+                        city_b: cityB,
+                        time: time
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data);
+                } else {
+                    showError(data.error || 'An error occurred');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('convertBtn').disabled = false;
+            }
+        });
+        
+        function showResult(data) {
+            document.getElementById('cityAName').textContent = data.city_a;
+            document.getElementById('cityBName').textContent = data.city_b;
+            document.getElementById('timeA').textContent = data.time_a.split(' ').slice(1, 2).join(' ');
+            document.getElementById('timeB').textContent = data.time_b.split(' ').slice(1, 2).join(' ');
+            document.getElementById('timezoneA').textContent = data.timezone_a + ' • ' + data.time_a.split(' ')[0];
+            document.getElementById('timezoneB').textContent = data.timezone_b + ' • ' + data.time_b.split(' ')[0];
+            
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+        }
+    </script>
+
+    <script>
+        window.addEventListener('load', function() {
+            // Fill the form
+            document.getElementById('cityA').value = 'New York';
+            document.getElementById('cityB').value = 'London';
+            
+            // Show results after a delay
+            setTimeout(function() {
+                showResult({
+                    city_a: "New York",
+                    city_b: "London", 
+                    time_a: "2025-06-21 16:45:38 EDT",
+                    time_b: "2025-06-21 21:45:38 BST",
+                    timezone_a: "America/New_York",
+                    timezone_b: "Europe/London"
+                });
+            }, 1000);
+        });
+    </script>
+    </body>
+</html>
