@@ -284,5 +284,25 @@
             document.getElementById('result').style.display = 'none';
         }
     </script>
-</body>
+
+    <script>
+        window.addEventListener('load', function() {
+            // Fill the form
+            document.getElementById('cityA').value = 'New York';
+            document.getElementById('cityB').value = 'London';
+            
+            // Show results after a delay
+            setTimeout(function() {
+                showResult({
+                    city_a: "New York",
+                    city_b: "London", 
+                    time_a: "2025-06-21 16:45:38 EDT",
+                    time_b: "2025-06-21 21:45:38 BST",
+                    timezone_a: "America/New_York",
+                    timezone_b: "Europe/London"
+                });
+            }, 1000);
+        });
+    </script>
+    </body>
 </html>
