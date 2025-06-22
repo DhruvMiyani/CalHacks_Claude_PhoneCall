@@ -9,7 +9,8 @@ This is a Python-based IDE monitoring system that uses Claude AI for orchestrati
 Before running the application, you need to set the ANTHROPIC_API_KEY environment variable:
 
 ```bash
-export ANTHROPIC_API_KEY=your-claude-api-key-here
+export SANDWICH_ANTHROPIC_API_KEY=your-claude-api-key-here
+
 ```
 
 ### Configuration
