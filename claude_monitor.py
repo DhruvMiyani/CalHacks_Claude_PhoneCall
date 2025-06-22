@@ -9,7 +9,6 @@ import sys
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from anthropic import Anthropic
-from claude_code_sdk import query, ClaudeCodeOptions
 
 class ClaudeMonitor:
     def __init__(self):
