@@ -19,6 +19,8 @@ class ClaudeMonitor:
         self.watch_directory = "/Users/jaidevshah/.claude/projects/-Users-jaidevshah-Desktop-sandwich-berkeley-hacks"
         self.monitor_interval = 15
         self.running = False
+        self.last_file_mtime = None
+        self.last_processed_file = None
 
     def find_latest_jsonl_file(self) -> Optional[str]:
         """Find the most recently created .jsonl file in the watch directory."""
@@ -60,13 +62,13 @@ class ClaudeMonitor:
         tools = [
             {
                 "name": "voice_agent",
-                "description": "Initiate a voice call with the user to clarify errors or answer questions",
+                "description": "Initiate a voice call with the user to clarify errors or answer questions or give a decision when multiple plans are proposed",
                 "input_schema": {
                     "type": "object",
                     "properties": {
                         "reason": {
                             "type": "string",
-                            "description": "The reason for initiating the voice call (error or question)"
+                            "description": "The reason for initiating the voice call (error or question or multiple plans are proposed )"
                         },
                         "context": {
                             "type": "string", 
@@ -86,7 +88,7 @@ class ClaudeMonitor:
                 messages=[
                     {
                         "role": "user",
-                        "content": f"Context from recent conversation:\n{context_text}\n\nIf there is an error or a question that needs to be answered by the user, call the voice_agent tool."
+                        "content": f"Context from recent conversation:\n{context_text}\n\nIf there is an error or question that needs to be answered by the user or multiple plans proposed, then call the voice_agent tool."
                     }
                 ]
             )
@@ -130,13 +132,25 @@ class ClaudeMonitor:
             print("No JSONL files found in watch directory")
             return
 
+        # Check if the file has changed since last processing
+        current_mtime = os.path.getmtime(latest_file)
+        
+        if (self.last_processed_file == latest_file and 
+            self.last_file_mtime == current_mtime):
+            print(f"📄 File {os.path.basename(latest_file)} unchanged - skipping Claude API call")
+            return
+
+        # Update tracking variables
+        self.last_processed_file = latest_file
+        self.last_file_mtime = current_mtime
+
         last_lines = self.read_last_n_lines(latest_file, 5)
         if not last_lines:
             print("No lines found in latest file")
             return
 
         # Log the lines we're processing
-        print(f"\n--- Processing file: {os.path.basename(latest_file)} ---")
+        print(f"\n--- Processing file: {os.path.basename(latest_file)} (CHANGED) ---")
         print("Last 5 lines:")
         for i, line in enumerate(last_lines, 1):
             # Truncate long lines for readability
