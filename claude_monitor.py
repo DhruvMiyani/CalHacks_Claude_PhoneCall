@@ -12,15 +12,111 @@ from anthropic import Anthropic
 
 class ClaudeMonitor:
     def __init__(self):
-        self.claude_api_key = os.getenv('ANTHROPIC_API_KEY')
-        if not self.claude_api_key:
-            raise ValueError("ANTHROPIC_API_KEY environment variable must be set")
-        self.client = Anthropic(api_key=self.claude_api_key)
-        self.watch_directory = "/Users/jaidevshah/.claude/projects/-Users-jaidevshah-Desktop-sandwich-berkeley-hacks"
-        self.monitor_interval = 15
+        # Load all configuration from config file
+        self.config = self.load_config()
+        
+        # Initialize Claude client
+        claude_api_key = self.config.get('claude_api_key') or os.getenv('ANTHROPIC_API_KEY')
+        if not claude_api_key:
+            raise ValueError("Claude API key must be set in monitor_config.json or ANTHROPIC_API_KEY environment variable")
+        self.client = Anthropic(api_key=claude_api_key)
+        
+        self.watch_directory = self.get_claude_project_directory()
+        self.monitor_interval = self.config.get('monitor_interval', 15)
         self.running = False
         self.last_file_mtime = None
         self.last_processed_file = None
+    
+    def load_config(self) -> Dict[str, Any]:
+        """Load configuration from file or create default"""
+        config_file = 'monitor_config.json'
+        default_config = {
+            "claude_api_key": "",
+            "vapi_api_key": "",
+            "vapi_phone_number_id": "",
+            "vapi_target_phone": "",
+            "twilio_account_sid": "",
+            "twilio_auth_token": "",
+            "twilio_from_phone": "",
+            "twilio_to_phone": "",
+            "monitor_interval": 15,
+            "watch_directory": ""  # Auto-detect if empty
+        }
+        
+        if os.path.exists(config_file):
+            try:
+                with open(config_file, 'r') as f:
+                    config = json.load(f)
+                    return {**default_config, **config}
+            except Exception as e:
+                print(f"Error loading config: {e}")
+        
+        # Create default config file
+        with open(config_file, 'w') as f:
+            json.dump(default_config, f, indent=2)
+        
+        print(f"Created default config file: {config_file}")
+        return default_config
+
+    def get_claude_project_directory(self) -> str:
+        """Automatically detect the Claude project directory"""
+        # Check if explicitly configured
+        if self.config.get('watch_directory'):
+            configured_dir = self.config['watch_directory']
+            if os.path.exists(configured_dir):
+                print(f"📁 Using configured directory: {configured_dir}")
+                return configured_dir
+            else:
+                print(f"⚠️ Configured directory doesn't exist: {configured_dir}")
+        
+        # Auto-detect Claude project directory
+        current_user = os.path.expanduser("~")
+        claude_projects_dir = os.path.join(current_user, ".claude", "projects")
+        
+        if not os.path.exists(claude_projects_dir):
+            fallback_dir = os.getcwd()
+            print(f"❌ Claude projects directory not found: {claude_projects_dir}")
+            print(f"📁 Falling back to current directory: {fallback_dir}")
+            return fallback_dir
+        
+        # Get current working directory to match against project names
+        current_dir = os.getcwd()
+        current_dir_encoded = current_dir.replace("/", "-").replace(" ", "-")
+        
+        # Look for matching project directories
+        project_dirs = []
+        for item in os.listdir(claude_projects_dir):
+            project_path = os.path.join(claude_projects_dir, item)
+            if os.path.isdir(project_path):
+                project_dirs.append((item, project_path, os.path.getmtime(project_path)))
+        
+        if not project_dirs:
+            fallback_dir = os.getcwd()
+            print(f"❌ No Claude project directories found in: {claude_projects_dir}")
+            print(f"📁 Falling back to current directory: {fallback_dir}")
+            return fallback_dir
+        
+        # Show available projects for debugging
+        print(f"📂 Found {len(project_dirs)} Claude projects:")
+        for name, path, mtime in sorted(project_dirs, key=lambda x: x[2], reverse=True)[:3]:
+            from datetime import datetime
+            time_str = datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M")
+            print(f"   • {name} (modified: {time_str})")
+        
+        # First, try to find a project that matches current directory
+        for project_name, project_path, mtime in project_dirs:
+            # Check if project name contains parts of current directory
+            if any(part in project_name.lower() for part in current_dir.lower().split('/') if len(part) > 3):
+                print(f"📁 Found matching project: {project_name}")
+                print(f"📍 Watching: {project_path}")
+                return project_path
+        
+        # If no match, use the most recently modified project
+        most_recent = max(project_dirs, key=lambda x: x[2])
+        project_name, project_path, mtime = most_recent
+        print(f"📁 Using most recent Claude project: {project_name}")
+        print(f"📍 Watching: {project_path}")
+        return project_path
 
     def find_latest_jsonl_file(self) -> Optional[str]:
         """Find the most recently created .jsonl file in the watch directory."""
@@ -45,12 +141,136 @@ class ClaudeMonitor:
             return []
 
     async def voice_agent(self, context: str) -> str:
-        """Placeholder for voice agent function - assumes this is implemented elsewhere."""
-        # This is a placeholder for the actual voice agent implementation
-        print(f"Voice agent called with context: {context}")
-        # Simulate async voice call
-        await asyncio.sleep(2)
-        return "Voice call completed. User provided clarification on the error."
+        """Make VAPI voice call for clarification"""
+        try:
+            import requests
+            import time
+            from datetime import datetime
+            
+            if not all([self.config.get('vapi_api_key'), self.config.get('vapi_phone_number_id'), self.config.get('vapi_target_phone')]):
+                return "VAPI configuration incomplete - check monitor_config.json"
+            
+            # Create clarification question from context
+            question = f"I need clarification on this coding issue: {context[:200]}{'...' if len(context) > 200 else ''}. What's your decision or solution?"
+            
+            # VAPI assistant configuration
+            assistant = {
+                'firstMessage': f"Hello, this is your coding assistant calling. {question}",
+                'model': {
+                    'provider': 'openai',
+                    'model': 'gpt-4o',
+                    'temperature': 0.7,
+                    'messages': [
+                        {
+                            'role': 'system',
+                            'content': (
+                                "You are a professional coding assistant gathering clarification. "
+                                "Ask the clarification question clearly. When the user responds, "
+                                "summarize their decision briefly and say you'll relay it back, then end the call. "
+                                "Keep all responses under 25 words. Be direct and professional."
+                            )
+                        }
+                    ],
+                    'tools': [{'type': 'endCall'}]
+                },
+                'voice': {
+                    'provider': '11labs',
+                    'voiceId': 'pNInz6obpgDQGcFmaJgB'  # Adam voice
+                },
+                'transcriber': {
+                    'provider': 'deepgram',
+                    'model': 'nova-2',
+                    'language': 'en-US'
+                },
+                'firstMessageMode': 'assistant-speaks-first',
+                'silenceTimeoutSeconds': 10,
+                'maxDurationSeconds': 120
+            }
+            
+            # Call payload
+            call_payload = {
+                'assistant': assistant,
+                'customer': {
+                    'number': self.config['vapi_target_phone']
+                },
+                'phoneNumberId': self.config['vapi_phone_number_id']
+            }
+            
+            # Make the VAPI call
+            headers = {
+                'Authorization': f'Bearer {self.config["vapi_api_key"]}',
+                'Content-Type': 'application/json'
+            }
+            
+            print(f"🚀 Initiating VAPI call...")
+            response = requests.post('https://api.vapi.ai/call', headers=headers, json=call_payload)
+            
+            if response.status_code == 201:
+                call_data = response.json()
+                call_id = call_data.get('id')
+                print(f"✅ VAPI call initiated! Call ID: {call_id}")
+                print("📞 Answer your phone...")
+                
+                # Wait for call to complete and get results
+                print("⏳ Waiting for call to complete...")
+                
+                while True:
+                    await asyncio.sleep(5)  # Check every 5 seconds
+                    
+                    # Get call details
+                    call_response = requests.get(f'https://api.vapi.ai/call/{call_id}', headers=headers)
+                    
+                    if call_response.status_code == 200:
+                        call_info = call_response.json()
+                        status = call_info.get('status')
+                        
+                        print(f"📊 Call status: {status}")
+                        
+                        if status == 'ended':
+                            # Call finished - get the transcript
+                            print("\n🏁 CALL COMPLETED!")
+                            
+                            # Get conversation messages
+                            artifact = call_info.get('artifact', {})
+                            messages = artifact.get('messages', [])
+                            
+                            user_responses = []
+                            for msg in messages:
+                                if msg.get('role') == 'user':
+                                    user_msg = msg.get('message', '')
+                                    if user_msg:
+                                        user_responses.append(user_msg)
+                                        print(f"👤 You said: \"{user_msg}\"")
+                            
+                            if user_responses:
+                                decision = " | ".join(user_responses)
+                                
+                                # Save the decision
+                                clarification_file = f"clarification_{call_id}.txt"
+                                with open(clarification_file, 'w') as f:
+                                    f.write(f"Clarification Decision\n")
+                                    f.write(f"=====================\n")
+                                    f.write(f"Context: {context}\n")
+                                    f.write(f"Raw Response: {decision}\n")
+                                    f.write(f"Call ID: {call_id}\n")
+                                    f.write(f"Timestamp: {datetime.now().isoformat()}\n")
+                                
+                                print(f"🎯 USER DECISION: \"{decision}\"")
+                                print(f"💾 Saved to: {clarification_file}")
+                                
+                                return f"User decision: {decision}"
+                            else:
+                                return "No clear response captured from voice call"
+                        
+                        elif status == 'failed':
+                            return f"VAPI call failed: {call_info.get('error', 'Unknown error')}"
+                    else:
+                        return f"Error checking call status: {call_response.status_code}"
+            else:
+                return f"Failed to initiate VAPI call: {response.status_code} - {response.text}"
+                
+        except Exception as e:
+            return f"Error in voice agent: {e}"
 
     async def call_claude_for_analysis(self, context_lines: List[str]) -> Optional[Dict[str, Any]]:
         """Call Claude API to analyze context and potentially trigger voice agent."""

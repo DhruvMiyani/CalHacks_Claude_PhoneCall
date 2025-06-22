@@ -1,0 +1,11 @@
+Clarification Decision
+=====================
+Context: Analyzing WebRTCClient.swift for concurrency optimization. Need to discuss several approaches:
+1. Audio session handling: Current implementation has potential thread safety issues around rtcAudioSession configuration
+2. Data channel optimizations: Current UDP implementation needs review for thread safety
+3. Media sender setup: createMediaSenders() could benefit from async/await pattern
+4. Connection state management: Multiple threads accessing connection state needs synchronization
+5. Audio stats collection: getAudioStats completion handler pattern could be improved
+Raw Response: Wait. Say that again? | What are the options, big man? | Let's refactor for async await. | It's
+Call ID: 9cd31500-78f9-440c-a340-bc05e3348215
+Timestamp: 2025-06-21T20:26:54.639622
