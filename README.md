@@ -3,8 +3,11 @@
 This is a Python-based IDE monitoring system that uses Claude AI for orchestration.
 
 # Devpost:
-https://devpost.com/software/sandwich-voice-driven-development-workflow?ref_content=user-portfolio&ref_feature=in_progress
-![IMG_4517](https://github.com/user-attachments/assets/ec91eac5-6c2d-4691-b8b6-55cb4f586a1d)
+[Devpost Link 👉 ](https://devpost.com/software/sandwich-voice-driven-development-workflow?ref_content=user-portfolio&ref_feature=in_progress)
+
+
+<img src="https://github.com/user-attachments/assets/ec91eac5-6c2d-4691-b8b6-55cb4f586a1d" alt="IMG_4517" width="500"/>
+
 
 
 
