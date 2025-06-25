@@ -26,7 +26,7 @@ The system also requires a `monitor_config.json` file with additional API keys a
 ## Running
 
 ```bash
-python local_client.py
+claude_monitor.py
 ```
 
 For more detailed information about the architecture and usage, see CLAUDE.md.
