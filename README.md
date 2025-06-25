@@ -1,6 +1,12 @@
-# IDE Monitor System
+# Sandwich — Phone call Driven Development Workflow
 
-This is a Python-based IDE monitoring system that uses Claude AI for orchestration and Gemini Vision for screenshot analysis.
+This is a Python-based IDE monitoring system that uses Claude AI for orchestration.
+
+# Devpost:
+https://devpost.com/software/sandwich-voice-driven-development-workflow?ref_content=user-portfolio&ref_feature=in_progress
+![IMG_4517](https://github.com/user-attachments/assets/ec91eac5-6c2d-4691-b8b6-55cb4f586a1d)
+
+
 
 ## Setup
 
